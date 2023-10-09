@@ -1,15 +1,7 @@
 import com.google.gson.Gson
-import data.FileHash
 import data.Flow
-import data.FolderData
-import java.io.File
 import java.io.FileInputStream
-import java.io.FileOutputStream
-import java.math.BigInteger
-import java.net.InetAddress
-import java.security.MessageDigest
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 
 fun main(args: Array<String>) {
@@ -29,6 +21,16 @@ fun main(args: Array<String>) {
         println("Error: Invalid path to the flow file.")
         return
     }
+    if (args[0] == "-i" || args[0] == "--info") {
+        Thread {
+            try {
+                showInfo(args[1])
+            } catch (e: Exception) {
+                println("Error: ${e.message}")
+            }
+        }.start()
+        return
+    }
     if (args[0] == "-x" || args[0] == "--execute") {
         //execute(args[1], args[2])
         return
@@ -40,75 +42,55 @@ fun main(args: Array<String>) {
     if (args[0] == "-n" || args[0] == "--new") {
         Thread {
             try {
-                val creator = FlowCreator()
-                creator.onProgress.add { progress, total ->
-                    printProgress(creator.startTime, total.toLong(), progress.toLong())
-                }
-                creator.create(args[1], args[2],args.contains("-o")||args.contains("--overwrite"))
+                Creator().writeTo(args[1], args[2],args.contains("-o")||args.contains("--overwrite"))
             } catch (e: Exception) {
                 println("Error: ${e.message}")
             }
         }.start()
         return
     }
-    if (args[0] == "-s" || args[0] == "--sync") {
-        //upload(args[1], args[2])
+    if (args[0] == "-c" || args[0] == "--compare") {
+        Thread{
+            try {
+                Updater().compare("testflow.json","C:\\adb",args.contains("-l")||args.contains("--list"),args.contains("-np")||args.contains("--nopatch"))
+            }catch (e:Exception){
+                println("Error: ${e.message}")
+            }
+        }.start()
         return
     }
-
-
-}
-private fun printProgress(startTime: Long, total: Long, current: Long) {
-    val eta = if (current == 0L) 0 else (total - current) * (System.currentTimeMillis() - startTime) / current
-    val etaHms = if (current == 0L) "N/A" else String.format(
-        "%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(eta),
-        TimeUnit.MILLISECONDS.toMinutes(eta) % TimeUnit.HOURS.toMinutes(1),
-        TimeUnit.MILLISECONDS.toSeconds(eta) % TimeUnit.MINUTES.toSeconds(1)
-    )
-    val string = StringBuilder(140)
-    val percent = (current * 100 / total).toInt()
-    string
-        .append('\r')
-        .append(
-            java.lang.String.join(
-                "", Collections.nCopies(
-                    if (percent == 0) 2 else 2 - Math.log10(percent.toDouble())
-                        .toInt(), " "
-                )
-            )
-        )
-        .append(String.format(" %d%% [", percent))
-        .append(java.lang.String.join("", Collections.nCopies(percent, "=")))
-        .append('>')
-        .append(java.lang.String.join("", Collections.nCopies(100 - percent, " ")))
-        .append(']')
-        .append(
-            java.lang.String.join(
-                "", Collections.nCopies(
-                    Math.log10(total.toDouble()).toInt() - Math.log10(current.toDouble())
-                        .toInt(), " "
-                )
-            )
-        )
-        .append(String.format(" %d/%d, ETA: %s", current, total, etaHms))
-    print(string)
 }
 
 fun showHelp() {
     println("FolderFlow - A simple tool to sync folders between computers, via removable drive.")
-    println("Usage: java -jar FolderFlow.jar [options] [path/flow-file.json] [folder] [extras]")
+    println("Usage: java -jar FolderFlow.jar [options] [drive:\\path\\flow.json] [target-folder] [extras]")
     println("Options:")
     println("  -h, --help\t\t\tShow this help message and exit.")
     println("  -v, --version\t\t\tShow version information and exit.")
     println("  -n, --new \t\t\tCreate new flow configuration from target folder.")
-    println("  -s, --sync\t\t\tSync target folder to flow as patch.")
-    println("  -x, --execute\t\t\tApply the flow to local folder.")
+    println("  -i, --info\t\t\tDisplay info of a selected flow file.")
+    println("  -c, --compare\t\t\tCompare target folder to flow and generate patch.")
+    println("  -x, --execute\t\t\tApply the patch to local folder.")
     println("Extras:")
-    println("  -o, --overwrite\t\tOverwrite existing flow file.")
+    println("  -o, --overwrite\t\tOverwrite (existing flow file/patch folder).")
+    println("  -l, --list\t\t\tList the changes.")
+    println("  -np, --nopatch\t\t\tDisable patch generation.")
 }
 
 fun showVersion() {
-    println("FolderFlow version 0.1.0-beta")
+    println("FolderFlow version 0.1.0-beta\nMade by legendsayantan")
+}
+
+fun showInfo(path:String){
+    val fis = FileInputStream(path);
+    val flow = Gson().fromJson(fis.readAllBytes().toString(Charsets.UTF_8),Flow::class.java)
+    fis.close()
+    println("Flow Info:")
+    println("  Target device: ${flow.device}")
+    println("  Creation Time: ${Date(flow.time)}")
+    println("  Target folder : ${flow.path}")
+    println("  Patch file : ${flow.patch}")
+    println("  Total files: ${flow.fileCount}")
 }
 
 
