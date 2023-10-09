@@ -10,7 +10,7 @@ import java.net.InetAddress
 import java.security.MessageDigest
 import kotlin.system.exitProcess
 
-class Creator : Utils(){
+class FlowCreator : Utils(){
     fun writeTo(flow: String, target: String, overwrite:Boolean = false) {
         val file = File(flow)
         if (file.exists() && overwrite.not()) {

@@ -1,15 +1,18 @@
 import java.io.File
 import java.util.*
 import java.util.concurrent.TimeUnit
+import kotlin.math.log10
 
 open class Utils {
     var startTime = 1L
+    private var lastUpdated = 0L
+    var total = 0L
     var progress = 0L
         set(value) {
             field = value
-            if(value!=0L)printProgress(startTime,total,value)
+            if(value!=0L && lastUpdated<(System.currentTimeMillis()/100))printProgress(startTime,total,value)
+            else if (value!=0L && value==total)printProgress(startTime,total,value)
         }
-    var total = 0L
     fun countFiles(folder: File): Long {
         var count = 0L
         folder.listFiles()?.forEach {
@@ -22,6 +25,7 @@ open class Utils {
         return count
     }
     private fun printProgress(startTime: Long, total: Long, current: Long) {
+        lastUpdated = System.currentTimeMillis()/100L
         val eta = if (current == 0L) 0 else (total - current) * (System.currentTimeMillis() - startTime) / current
         val etaHms = if (current == 0L) "N/A" else String.format(
             "%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(eta),
@@ -35,7 +39,7 @@ open class Utils {
             .append(
                 java.lang.String.join(
                     "", Collections.nCopies(
-                        if (percent == 0) 2 else 2 - Math.log10(percent.toDouble())
+                        if (percent == 0) 2 else 2 - log10(percent.toDouble())
                             .toInt(), " "
                     )
                 )
@@ -48,7 +52,7 @@ open class Utils {
             .append(
                 java.lang.String.join(
                     "", Collections.nCopies(
-                        Math.log10(total.toDouble()).toInt() - Math.log10(current.toDouble())
+                        log10(total.toDouble()).toInt() - log10(current.toDouble())
                             .toInt(), " "
                     )
                 )

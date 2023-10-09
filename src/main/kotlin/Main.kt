@@ -1,16 +1,14 @@
 import com.google.gson.Gson
 import data.Flow
+import java.io.File
 import java.io.FileInputStream
 import java.util.*
 
 
 fun main(args: Array<String>) {
+    showIntro()
     if (args.isEmpty() || args[0] == "-h" || args[0] == "--help") {
         showHelp()
-        return
-    }
-    if (args[0] == "-v" || args[0] == "--version") {
-        showVersion()
         return
     }
     if (args.size < 2) {
@@ -32,7 +30,13 @@ fun main(args: Array<String>) {
         return
     }
     if (args[0] == "-x" || args[0] == "--execute") {
-        //execute(args[1], args[2])
+        Thread {
+            try {
+                FlowExecutor().applyPatch(args[1], args.contains("-nd") || args.contains("--nodelete"))
+            } catch (e: Exception) {
+                println("Error: ${e.message}")
+            }
+        }.start()
         return
     }
     if (args.size < 3) {
@@ -42,7 +46,7 @@ fun main(args: Array<String>) {
     if (args[0] == "-n" || args[0] == "--new") {
         Thread {
             try {
-                Creator().writeTo(args[1], args[2],args.contains("-o")||args.contains("--overwrite"))
+                FlowCreator().writeTo(args[1], args[2], args.contains("-o") || args.contains("--overwrite"))
             } catch (e: Exception) {
                 println("Error: ${e.message}")
             }
@@ -50,47 +54,68 @@ fun main(args: Array<String>) {
         return
     }
     if (args[0] == "-c" || args[0] == "--compare") {
-        Thread{
+        var customPatchPath = null as String?
+        if (args.contains("-o") || args.contains("--overwrite")) {
+            println("Where to create patch folder: ")
+            customPatchPath = readln()
+        }
+        Thread {
             try {
-                Updater().compare("testflow.json","C:\\adb",args.contains("-l")||args.contains("--list"),args.contains("-np")||args.contains("--nopatch"))
-            }catch (e:Exception){
+                FlowUpdater().compare(
+                    args[1],
+                    args[2],
+                    list = args.contains("-l") || args.contains("--list"),
+                    nopatch = args.contains("-np") || args.contains("--nopatch"),
+                    customPatchPath
+                )
+            } catch (e: Exception) {
                 println("Error: ${e.message}")
             }
         }.start()
         return
     }
+    readln()
 }
 
 fun showHelp() {
-    println("FolderFlow - A simple tool to sync folders between computers, via removable drive.")
-    println("Usage: java -jar FolderFlow.jar [options] [drive:\\path\\flow.json] [target-folder] [extras]")
+    println("A simple tool to sync folders between computers, via removable drive.")
+    println("Usage: FolderFlow [options] [drive:\\path\\flow.json] [target-folder] [extras]")
     println("Options:")
     println("  -h, --help\t\t\tShow this help message and exit.")
-    println("  -v, --version\t\t\tShow version information and exit.")
     println("  -n, --new \t\t\tCreate new flow configuration from target folder.")
     println("  -i, --info\t\t\tDisplay info of a selected flow file.")
-    println("  -c, --compare\t\t\tCompare target folder to flow and generate patch.")
+    println("  -c, --compare\t\t\tCompare and copy diff as patch.")
     println("  -x, --execute\t\t\tApply the patch to local folder.")
     println("Extras:")
-    println("  -o, --overwrite\t\tOverwrite (existing flow file/patch folder).")
+    println("  -o, --overwrite\t\tOverwrite (existing flow file/patch folder path).")
     println("  -l, --list\t\t\tList the changes.")
-    println("  -np, --nopatch\t\t\tDisable patch generation.")
+    println(" -np, --nopatch\t\t\tDisable patch generation.")
+    println(" -nd, --nodelete\t\tDisable file deletion from patch.")
+    println("Examples:")
+    println("  FolderFlow -n E:\\flow.json C:\\oldFolder")
+    println("  FolderFlow -c E:\\flow.json D:\\updatedFolder -l")
+    println("  FolderFlow -x E:\\flow.json")
 }
 
-fun showVersion() {
-    println("FolderFlow version 0.1.0-beta\nMade by legendsayantan")
+fun showIntro() {
+    println("FolderFlow v0.1.0-beta")
 }
 
-fun showInfo(path:String){
-    val fis = FileInputStream(path);
-    val flow = Gson().fromJson(fis.readAllBytes().toString(Charsets.UTF_8),Flow::class.java)
+fun showInfo(path: String) {
+    val fis = FileInputStream(path)
+    val flow = Gson().fromJson(fis.readAllBytes().toString(Charsets.UTF_8), Flow::class.java)
     fis.close()
     println("Flow Info:")
     println("  Target device: ${flow.device}")
     println("  Creation Time: ${Date(flow.time)}")
     println("  Target folder : ${flow.path}")
-    println("  Patch file : ${flow.patch}")
     println("  Total files: ${flow.fileCount}")
+    if (flow.patch != null) {
+        println("  Patch folder : ${flow.patch}")
+        println("  Files changed: ${Utils().countFiles(File(flow.patch!!))}")
+    }
+    if(flow.toDelete.isNotEmpty())
+        println("  Files deleted: ${flow.toDelete.size}")
 }
 
 

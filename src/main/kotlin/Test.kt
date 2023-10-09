@@ -1,11 +1,16 @@
 fun main(){
-    when(1){
-        0->{
-            Creator().writeTo("testflow.json", "C:\\Users\\Admin\\AppData\\Local\\Android\\Sdk\\platform-tools",true)
+    when(readln()){
+        "0"->{
+            FlowCreator().writeTo("H:\\testflow.json", "F:\\test",true)
         }
-        1->{
+        "1"->{
             Thread{
-                Updater().compare("testflow.json","C:\\adb")
+                FlowUpdater().compare("H:\\testflow.json","F:\\test - Copy", list = true)
+            }.start()
+        }
+        "2"->{
+            Thread{
+                FlowExecutor().applyPatch("H:\\testflow.json")
             }.start()
         }
     }
