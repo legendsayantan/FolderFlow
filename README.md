@@ -23,7 +23,7 @@ This will scan the installation folder and create a new flow config, with the pr
 
 This will scan the updated installation folder and generate an update patch.
 
-### 3. Apply patch to non updated device
+### 3. Apply the update patch
 1. Plug the removable drive in the device with non-updated folder.
 2. Open a terminal/command prompt inside FolderFlow-v0.1.0/bin
 3. Run the command `Folderflow -x <flowconfig.json>`
