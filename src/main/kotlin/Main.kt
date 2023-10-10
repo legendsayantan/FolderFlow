@@ -95,6 +95,7 @@ fun showHelp() {
     println("  FolderFlow -n E:\\flow.json C:\\oldFolder")
     println("  FolderFlow -c E:\\flow.json D:\\updatedFolder -l")
     println("  FolderFlow -x E:\\flow.json")
+    println("Find more info at https://github.com/legendsayantan/FolderFlow")
 }
 
 fun showIntro() {
