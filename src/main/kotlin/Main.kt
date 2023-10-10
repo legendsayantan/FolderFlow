@@ -103,9 +103,12 @@ fun showIntro() {
 }
 
 fun showInfo(path: String) {
-    val fis = FileInputStream(path)
-    val flow = Gson().fromJson(fis.readAllBytes().toString(Charsets.UTF_8), Flow::class.java)
-    fis.close()
+    var content :ByteArray
+    FileInputStream(path).use { fis ->
+        content = ByteArray(File(path).length().toInt())
+        fis.read(content)
+    }
+    val flow = Gson().fromJson(content.toString(), Flow::class.java)
     println("Flow Info:")
     println("  Target device: ${flow.device}")
     println("  Creation Time: ${Date(flow.time)}")
