@@ -34,6 +34,7 @@ open class Utils {
         )
         val string = StringBuilder(140)
         val percent = (current * 100 / total).toInt()
+        val halfPercent = percent / 2
         string
             .append('\r')
             .append(
@@ -45,9 +46,9 @@ open class Utils {
                 )
             )
             .append(String.format(" %d%% [", percent))
-            .append(java.lang.String.join("", Collections.nCopies(percent, "=")))
+            .append(java.lang.String.join("", Collections.nCopies(halfPercent, "=")))
             .append('>')
-            .append(java.lang.String.join("", Collections.nCopies(100 - percent, " ")))
+            .append(java.lang.String.join("", Collections.nCopies(50 - halfPercent, " ")))
             .append(']')
             .append(
                 java.lang.String.join(

@@ -28,7 +28,7 @@ class FlowUpdater : Utils() {
         if (nopatch || (difference.size == 0 && deleted.size == 0)) return
         val patchPath =
             customPatch ?: (flowFile.parentFile.absolutePath + "\\" + flowFile.nameWithoutExtension + "-patch")
-        generatePatchFolder(flowPath, targetPath, difference, patchPath)
+        if(difference.size > 0) generatePatchFolder(flowPath, targetPath, difference, patchPath)
         val fos = FileOutputStream(flowPath)
         flowData.patch = patchPath
         flowData.toDelete.addAll(deleted)
