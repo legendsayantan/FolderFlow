@@ -1,7 +1,7 @@
+import Utils.Companion.readContent
 import com.google.gson.Gson
 import data.Flow
 import java.io.File
-import java.io.FileInputStream
 import java.util.*
 
 
@@ -103,9 +103,8 @@ fun showIntro() {
 }
 
 fun showInfo(path: String) {
-    val fis = FileInputStream(path)
-    val flow = Gson().fromJson(fis.readAllBytes().toString(Charsets.UTF_8), Flow::class.java)
-    fis.close()
+    val content = File(path).readContent()
+    val flow = Gson().fromJson(content.toString(), Flow::class.java)
     println("Flow Info:")
     println("  Target device: ${flow.device}")
     println("  Creation Time: ${Date(flow.time)}")

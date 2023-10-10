@@ -5,7 +5,7 @@ fun main(){
         }
         "1"->{
             Thread{
-                FlowUpdater().compare("H:\\testflow.json","F:\\test - Copy", list = true)
+                FlowUpdater().compare("H:\\testflow.json","F:\\test2", list = true)
             }.start()
         }
         "2"->{

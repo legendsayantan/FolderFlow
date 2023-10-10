@@ -3,7 +3,6 @@ import data.FileHash
 import data.Flow
 import data.FolderData
 import java.io.File
-import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.math.BigInteger
 import java.net.InetAddress
@@ -44,9 +43,7 @@ class FlowCreator : Utils(){
     }
 
     private fun prepareFile(file: File): FileHash {
-        val fis = FileInputStream(file)
-        val content = fis.readAllBytes()
-        fis.close()
+        val content = file.readContent()
         val hash = MessageDigest.getInstance("SHA-256").digest(content)
         val checksum = BigInteger(1, hash).toString(16)
         progress++
