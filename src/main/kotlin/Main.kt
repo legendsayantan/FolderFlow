@@ -1,4 +1,3 @@
-import Utils.Companion.readContent
 import com.google.gson.Gson
 import data.Flow
 import java.io.File
@@ -9,6 +8,8 @@ fun main(args: Array<String>) {
     showIntro()
     if (args.isEmpty() || args[0] == "-h" || args[0] == "--help") {
         showHelp()
+        println("Press enter to exit.")
+        readlnOrNull()
         return
     }
     if (args.size < 2) {
@@ -74,27 +75,31 @@ fun main(args: Array<String>) {
         }.start()
         return
     }
-    readln()
 }
 
 fun showHelp() {
     println("A simple tool to sync folders between computers, via removable drive.")
+    println()
     println("Usage: FolderFlow [options] [drive:\\path\\flow.json] [target-folder] [extras]")
+    println()
     println("Options:")
     println("  -h, --help\t\t\tShow this help message and exit.")
     println("  -n, --new \t\t\tCreate new flow configuration from target folder.")
     println("  -i, --info\t\t\tDisplay info of a selected flow file.")
     println("  -c, --compare\t\t\tCompare and copy diff as patch.")
     println("  -x, --execute\t\t\tApply the patch to local folder.")
+    println()
     println("Extras:")
     println("  -o, --overwrite\t\tOverwrite (existing flow file/patch folder path).")
     println("  -l, --list\t\t\tList the changes.")
     println(" -np, --nopatch\t\t\tDisable patch generation.")
     println(" -nd, --nodelete\t\tDisable file deletion from patch.")
+    println()
     println("Examples:")
     println("  FolderFlow -n E:\\flow.json C:\\oldFolder")
     println("  FolderFlow -c E:\\flow.json D:\\updatedFolder -l")
     println("  FolderFlow -x E:\\flow.json")
+    println()
     println("Find more info at https://github.com/legendsayantan/FolderFlow")
 }
 
@@ -103,7 +108,7 @@ fun showIntro() {
 }
 
 fun showInfo(path: String) {
-    val content = File(path).readContent()
+    val content = File(path).readBytes()
     val flow = Gson().fromJson(content.toString(), Flow::class.java)
     println("Flow Info:")
     println("  Target device: ${flow.device}")

@@ -1,7 +1,9 @@
+
 import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
+import java.security.MessageDigest
 import java.util.*
 import java.util.concurrent.TimeUnit
 import kotlin.math.log10
@@ -65,23 +67,28 @@ open class Utils {
                 .append(String.format(" %d/%d, ETA: %s", current, total, etaHms))
             print(string)
         }
-        fun File.readContent(): ByteArray? {
-            try {
-                BufferedInputStream(FileInputStream(this)).use { bis ->
-                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+        fun calculateSHA256Checksum(file: File): String {
+            val buffer = ByteArray(8192) // You can adjust the buffer size as needed.
+            val digest = MessageDigest.getInstance("SHA-256")
+            FileInputStream(file).use { fis ->
+                BufferedInputStream(fis).use { bis ->
                     var bytesRead: Int
-                    val content = mutableListOf<Byte>()
-
                     while (bis.read(buffer).also { bytesRead = it } != -1) {
-                        content.addAll(buffer.take(bytesRead))
+                        digest.update(buffer, 0, bytesRead)
                     }
-
-                    return content.toByteArray()
                 }
-            } catch (e: IOException) {
-                e.printStackTrace()
-                return null
             }
+            return bytesToHex(digest.digest())
+        }
+        private fun bytesToHex(bytes: ByteArray): String {
+            val hexChars = CharArray(bytes.size * 2)
+            for (i in bytes.indices) {
+                val v = bytes[i].toInt() and 0xFF
+                hexChars[i * 2] = "0123456789ABCDEF"[v ushr 4]
+                hexChars[i * 2 + 1] = "0123456789ABCDEF"[v and 0x0F]
+            }
+            return String(hexChars)
         }
     }
+
 }

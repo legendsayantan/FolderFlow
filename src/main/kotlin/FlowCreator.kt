@@ -43,9 +43,7 @@ class FlowCreator : Utils(){
     }
 
     private fun prepareFile(file: File): FileHash {
-        val content = file.readContent()
-        val hash = MessageDigest.getInstance("SHA-256").digest(content)
-        val checksum = BigInteger(1, hash).toString(16)
+        val checksum = calculateSHA256Checksum(file)
         progress++
         return FileHash(file.name, file.length(), checksum)
     }
